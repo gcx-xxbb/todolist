@@ -1,44 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-interface Todo { id: number, title: string, isFinished: boolean }
-const TodoList = () => {
+interface Todo { id: string, title: string, isFinished: boolean }
+interface todoProps { todoList: Todo[], addTodo: (todo: Todo) => void, deleteTodo: (id: string) => void, finishTodo: (id: string) => void }
+const TodoList = ({ todoList, addTodo, deleteTodo, finishTodo }: todoProps) => {
 
-	const [todos, setTodos] = useState<Todo[]>([]);
 	const [show, setShow] = useState<boolean>(false)
-	const [newTodo, setNewTodo] = useState<string>('' as any)
-
-	useEffect(() => {
-		setTimeout(() => {
-			const todoList = [
-				{ id: 1, title: '用 Vite 创建 react-ts 项目', isFinished: true },
-				{ id: 2, title: '动态修改App内容', isFinished: true },
-				{ id: 3, title: '写一个TodoList组件', isFinished: false },
-				{ id: 4, title: '加“添加待办”功能', isFinished: false },
-				{ id: 5, title: '加“删除”按钮', isFinished: false },
-				{ id: 6, title: '部署到 Vercel（免费+3分钟）', isFinished: false },
-				{ id: 7, title: '复盘：截图部署链接，发朋友圈/语雀：“Week 1 done!”', isFinished: false },
-			]
-			setTodos(todoList)
-		}, 1000)
-	}, [])
-
-	const finishTodo = (id: number) => {
-		setTodos(todos.map(todo => todo.id === id ? { ...todo, isFinished: !todo.isFinished } : todo))
-	}
+	const [newTodo, setNewTodo] = useState<string>('')
 
 	const handleAdd = () => {
 		const newData = {
-			id: todos.length + 1,
+			id: crypto.randomUUID(),
 			title: newTodo,
 			isFinished: false
 		}
-		setTodos([...todos, newData])
+		addTodo(newData)
 		setNewTodo('')
 		setShow(false)
-	}
-
-	const handleDelete = (id: number) => {
-		setTodos(todos.filter(todo => todo.id !== id))
 	}
 
 	return (
@@ -46,18 +23,18 @@ const TodoList = () => {
 			<table>
 				<thead>
 					<tr>
-						<th>ID</th>
+						<th>序号</th>
 						<th>任务名称</th>
 						<th>完成状态</th>
 					</tr>
 				</thead>
 				<tbody>
-					{todos.map((todo) => (
+					{todoList.map((todo, index) => (
 						<tr key={todo.id}>
-							<td>{todo.id}</td>
+							<td>{index + 1}</td>
 							<td>{todo.title}</td>
 							<td><input onChange={() => finishTodo(todo.id)} type="checkbox" checked={todo.isFinished} /></td>
-							<td><button onClick={() => handleDelete(todo.id)}>删除</button></td>
+							<td><button onClick={() => deleteTodo(todo.id)}>删除</button></td>
 						</tr>
 					))}
 				</tbody>
