@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import TodoList from './components/todoList'
+import useCounter from './hooks/useCounter'
+import useLocalStorage from './hooks/useLocalStorage'
 
 interface Todo { id: string, title: string, isFinished: boolean }
 
 
 function App() {
   const [date, setDate] = useState<Date>(new Date())
-  const [todoList, setTodoList] = useState<Todo[]>([])
+  const [todoList, setTodoList] = useLocalStorage<Todo[]>('todoList', [])
+  const { count, increment } = useCounter(0)
 
   const addTodo = (newTodo: Todo) => {
     setTodoList([...todoList, newTodo])
@@ -53,6 +56,7 @@ function App() {
       <h3>Hello,Typescript</h3>
       <p>{date.toLocaleString()}</p>
       <TodoList todoList={todoList} addTodo={addTodo} deleteTodo={deleteTodo} finishTodo={finishTodo} />
+      <button onClick={increment}>{count}</button >
     </>
   )
 }

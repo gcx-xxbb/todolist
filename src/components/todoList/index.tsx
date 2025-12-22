@@ -12,7 +12,7 @@ const TodoList = ({ todoList, addTodo, deleteTodo, finishTodo }: todoProps) => {
 			id: crypto.randomUUID(),
 			title: newTodo,
 			isFinished: false
-		}
+		}	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
 		addTodo(newData)
 		setNewTodo('')
 		setShow(false)
