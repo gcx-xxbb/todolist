@@ -1,8 +1,9 @@
 import { useState } from "react";
+import type { TodoAction } from "../../App";
 
 interface Todo { id: string, title: string, isFinished: boolean }
-interface todoProps { todoList: Todo[], addTodo: (todo: Todo) => void, deleteTodo: (id: string) => void, finishTodo: (id: string) => void }
-const TodoList = ({ todoList, addTodo, deleteTodo, finishTodo }: todoProps) => {
+interface todoProps { todoList: Todo[], dispatch: React.Dispatch<TodoAction> }
+const TodoList = ({ todoList, dispatch }: todoProps) => {
 
 	const [show, setShow] = useState<boolean>(false)
 	const [newTodo, setNewTodo] = useState<string>('')
@@ -12,8 +13,8 @@ const TodoList = ({ todoList, addTodo, deleteTodo, finishTodo }: todoProps) => {
 			id: crypto.randomUUID(),
 			title: newTodo,
 			isFinished: false
-		}	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
-		addTodo(newData)
+		}
+		dispatch({ type: 'add', payload: newData })
 		setNewTodo('')
 		setShow(false)
 	}
@@ -33,8 +34,8 @@ const TodoList = ({ todoList, addTodo, deleteTodo, finishTodo }: todoProps) => {
 						<tr key={todo.id}>
 							<td>{index + 1}</td>
 							<td>{todo.title}</td>
-							<td><input onChange={() => finishTodo(todo.id)} type="checkbox" checked={todo.isFinished} /></td>
-							<td><button onClick={() => deleteTodo(todo.id)}>删除</button></td>
+							<td><input onChange={() => dispatch({ type: 'finish', payload: todo.id })} type="checkbox" checked={todo.isFinished} /></td>
+							<td><button onClick={() => dispatch({ type: 'delete', payload: todo.id })}>删除</button></td>
 						</tr>
 					))}
 				</tbody>
