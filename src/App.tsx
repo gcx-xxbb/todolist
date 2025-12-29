@@ -1,48 +1,44 @@
-import { useEffect, useReducer, useState } from 'react'
+import { useEffect, useReducer, useState, } from 'react'
 import './App.css'
 import TodoList from './components/todoList'
 import useCounter from './hooks/useCounter'
 import useLocalStorage from './hooks/useLocalStorage'
+import TodoContext from './context/TodoContext'
+import Toast from './components/toast'
+import { NotificationContext } from './context/notification'
+import { AuthContext } from './context/AuthContext'
 
-interface Todo { id: string, title: string, isFinished: boolean }
+export interface Todo { id: string, title: string, isFinished: boolean }
 
 export type TodoAction = { type: 'add', payload: Todo } | { type: 'delete', payload: string } | { type: 'finish', payload: string }
-
 
 function App() {
   const [date, setDate] = useState<Date>(new Date())
   const [todoList, setTodoList] = useLocalStorage<Todo[]>('todoList', [])
   const { count, increment } = useCounter(0)
+  const [notification, setNotificationState] = useState<{ message: string; id: number } | null>(null)
 
-  const reducer = (state: Todo[], action: TodoAction): Todo[] => {
+  const setNotification = (message: string) => {
+    setNotificationState({ message, id: Date.now() })
+  }
+
+
+  const reducer = (todos: Todo[], action: TodoAction): Todo[] => {
     switch (action.type) {
       case 'add':
-        const addData = [...state, action.payload]
+        const addData = [...todos, action.payload]
         return addData
       case 'delete':
-        return state.filter(todo => todo.id !== action.payload)
+        return todos.filter(todo => todo.id !== action.payload)
       case 'finish':
-        return state.map(todo => todo.id === action.payload ? { ...todo, isFinished: !todo.isFinished } : todo)
+        return todos.map(todo => todo.id === action.payload ? { ...todo, isFinished: !todo.isFinished } : todo)
       default:
-        return state
+        return todos
     }
   }
 
-  const [state, dispatch] = useReducer(reducer, todoList)
+  const [todos, dispatch] = useReducer(reducer, todoList)
 
-
-  // const addTodo = (newTodo: Todo) => {
-  //   setTodoList([...todoList, newTodo])
-  // }
-
-  // const deleteTodo = (id: string) => {
-  //   setTodoList(todoList.filter(todo => todo.id !== id))
-  // }
-
-
-  // const finishTodo = (id: string) => {
-  //   setTodoList(todoList.map(todo => todo.id === id ? { ...todo, isFinished: !todo.isFinished } : todo))
-  // }
 
   const mockData = () => {
     const todos: Todo[] = [
@@ -54,7 +50,7 @@ function App() {
       { id: '6', title: '部署到 Vercel（免费+3分钟）', isFinished: false },
       { id: '7', title: '复盘：截图部署链接，发朋友圈/语雀：“Week 1 done!”', isFinished: false },
       { id: '8', title: '定义 Task 类型：{ id: string; text: string; done: boolean }', isFinished: false },
-      { id: '9', title: '把 TodoList 的 props 和 state 用 TS 类型标注', isFinished: false },
+      { id: '9', title: '把 TodoList 的 props 和 todos 用 TS 类型标注', isFinished: false },
       { id: '10', title: '写一个 mock API 函数，返回 Promise<Task[]>', isFinished: false },
       { id: '11', title: '用 useEffect 模拟加载数据（代替硬编码）', isFinished: false },
       { id: '12', title: '尝试写一个泛型 Hook：useLocalStorage<T>(key, initialValue)', isFinished: false },
@@ -92,24 +88,27 @@ function App() {
   }, [])
 
   useEffect(() => {
-    setTodoList(state)
-  }, [state, setTodoList])
-
-
+    setTodoList(todos)
+  }, [todos, setTodoList])
 
   // useEffect(() => {
   //   mockData().then(res => {
   //     setTodoList(res)
   //   })
   // }, [])
-
+  // todoList={todos} dispatch={dispatch}
   return (
-    <>
-      <h3>Hello,Typescript</h3>
-      <p>{date.toLocaleString()}</p>
-      <TodoList todoList={state} dispatch={dispatch} />
-      <button onClick={increment}>{count}</button >
-    </>
+    <AuthContext.Provider value={null}>
+      <NotificationContext.Provider value={{ notification, setNotification }}>
+        <TodoContext.Provider value={{ todos, dispatch }}>
+          <Toast />
+          <h3>Hello,Typescript</h3>
+          <p>{date.toLocaleString()}</p>
+          <TodoList />
+          <button onClick={increment}>{count}</button >
+        </TodoContext.Provider>
+      </NotificationContext.Provider>
+    </AuthContext.Provider>
   )
 }
 

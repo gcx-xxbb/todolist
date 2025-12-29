@@ -1,12 +1,27 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import type { TodoAction } from "../../App";
+import TodoContext from "../../context/TodoContext";
+import { NotificationContext } from "../../context/notification";
 
 interface Todo { id: string, title: string, isFinished: boolean }
 interface todoProps { todoList: Todo[], dispatch: React.Dispatch<TodoAction> }
-const TodoList = ({ todoList, dispatch }: todoProps) => {
+const TodoList = () => {
 
 	const [show, setShow] = useState<boolean>(false)
 	const [newTodo, setNewTodo] = useState<string>('')
+	const context = useContext(TodoContext)
+	const notificationContext = useContext(NotificationContext)
+
+	if (!context) {
+		throw new Error('TodoList 必须在 TodoContext.Provider 内使用！');
+	}
+
+	if (!notificationContext) {
+		throw new Error('TodoList 必须在 NotificationContext.Provider 内使用！');
+	}
+
+	const { todos, dispatch } = context;
+	const { setNotification } = notificationContext;
 
 	const handleAdd = () => {
 		const newData = {
@@ -19,6 +34,7 @@ const TodoList = ({ todoList, dispatch }: todoProps) => {
 		setShow(false)
 	}
 
+
 	return (
 		<div className="todo-list">
 			<table>
@@ -30,12 +46,19 @@ const TodoList = ({ todoList, dispatch }: todoProps) => {
 					</tr>
 				</thead>
 				<tbody>
-					{todoList.map((todo, index) => (
+					{todos.map((todo, index) => (
 						<tr key={todo.id}>
 							<td>{index + 1}</td>
 							<td>{todo.title}</td>
-							<td><input onChange={() => dispatch({ type: 'finish', payload: todo.id })} type="checkbox" checked={todo.isFinished} /></td>
-							<td><button onClick={() => dispatch({ type: 'delete', payload: todo.id })}>删除</button></td>
+							<td><input onChange={() => {
+								setNotification('修改成功')
+								dispatch({ type: 'finish', payload: todo.id })
+							}} type="checkbox" checked={todo.isFinished} /></td>
+							<td><button onClick={() => {
+								setNotification('删除成功')
+								dispatch({ type: 'delete', payload: todo.id })
+							}
+							}>删除</button></td>
 						</tr>
 					))}
 				</tbody>
