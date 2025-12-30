@@ -1,5 +1,6 @@
 import { useContext, useState, useEffect } from "react"
 import { NotificationContext } from "../../context/notification"
+import './index.css'
 
 const Toast = () => {
 	const [show, setShow] = useState(false)
@@ -20,7 +21,7 @@ const Toast = () => {
 
 	return (
 		<>
-			<div style={{ display: show ? 'block' : 'none' }}>{notification?.message}</div>
+			<div className="global-toast" style={{ display: show ? 'block' : 'none' }}>{notification?.message}</div>
 		</>
 	)
 }

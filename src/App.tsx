@@ -1,13 +1,10 @@
-import { useEffect, useReducer, useState, } from 'react'
+import { useEffect, useReducer, useState, useContext } from 'react'
 import './App.css'
 import TodoList from './components/todoList'
 import useCounter from './hooks/useCounter'
 import useLocalStorage from './hooks/useLocalStorage'
 import TodoContext from './context/TodoContext'
-import Toast from './components/toast'
-import { NotificationContext } from './context/notification'
 import { AuthContext } from './context/AuthContext'
-
 export interface Todo { id: string, title: string, isFinished: boolean }
 
 export type TodoAction = { type: 'add', payload: Todo } | { type: 'delete', payload: string } | { type: 'finish', payload: string }
@@ -16,11 +13,13 @@ function App() {
   const [date, setDate] = useState<Date>(new Date())
   const [todoList, setTodoList] = useLocalStorage<Todo[]>('todoList', [])
   const { count, increment } = useCounter(0)
-  const [notification, setNotificationState] = useState<{ message: string; id: number } | null>(null)
 
-  const setNotification = (message: string) => {
-    setNotificationState({ message, id: Date.now() })
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('App 必须在 AuthContext.Provider 内使用！');
   }
+  const { user } = context;
+
 
 
   const reducer = (todos: Todo[], action: TodoAction): Todo[] => {
@@ -90,24 +89,13 @@ function App() {
     setTodoList(todos)
   }, [todos, setTodoList])
 
-  // useEffect(() => {
-  //   mockData().then(res => {
-  //     setTodoList(res)
-  //   })
-  // }, [])
-  // todoList={todos} dispatch={dispatch}
   return (
-    <AuthContext.Provider value={null}>
-      <NotificationContext.Provider value={{ notification, setNotification }}>
-        <TodoContext.Provider value={{ todos, dispatch }}>
-          <Toast />
-          <h3>Hello,Typescript</h3>
-          <p>{date.toLocaleString()}</p>
-          <TodoList />
-          <button onClick={increment}>{count}</button >
-        </TodoContext.Provider>
-      </NotificationContext.Provider>
-    </AuthContext.Provider>
+    <TodoContext.Provider value={{ todos, dispatch }}>
+      <h3>Hello,Typescript</h3>
+      <p>{date.toLocaleString()}</p>
+      {user?.name && <TodoList />}
+      <button onClick={increment}>{count}</button >
+    </TodoContext.Provider>
   )
 }
 
