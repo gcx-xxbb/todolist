@@ -39,7 +39,6 @@ function App() {
 
   const [todos, dispatch] = useReducer(reducer, todoList)
 
-
   const mockData = () => {
     const todos: Todo[] = [
       { id: '1', title: '用 Vite 创建 react-ts 项目', isFinished: true },

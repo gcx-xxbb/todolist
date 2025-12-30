@@ -1,9 +1,10 @@
-import { createBrowserRouter } from 'react-router';
 import App from './App';
 
-createBrowserRouter([
+const routes = [
   {
     path: '/',
-    Component: App,
+    element: App,
   },
-]);
+];
+
+export default routes
