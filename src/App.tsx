@@ -7,7 +7,7 @@ import TodoContext from './context/TodoContext'
 import { AuthContext } from './context/AuthContext'
 export interface Todo { id: string, title: string, isFinished: boolean }
 
-export type TodoAction = { type: 'add', payload: Todo } | { type: 'delete', payload: string } | { type: 'finish', payload: string }
+export type TodoAction = { type: 'add', payload: Todo } | { type: 'delete', payload: string } | { type: 'finish', payload: string } | { type: 'clear' }
 
 function App() {
   const [date, setDate] = useState<Date>(new Date())
@@ -31,6 +31,8 @@ function App() {
         return todos.filter(todo => todo.id !== action.payload)
       case 'finish':
         return todos.map(todo => todo.id === action.payload ? { ...todo, isFinished: !todo.isFinished } : todo)
+      case 'clear':
+        return todos.filter(todo => !todo.isFinished)
       default:
         return todos
     }
