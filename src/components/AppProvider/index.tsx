@@ -24,6 +24,8 @@ const AppProvider = ({ children }: any) => {
 	const login = (name: string, password: string) => {
 		setUser({ name, password })
 		localStorage.setItem('user', JSON.stringify({ name, password }))
+		let tempPermissions = ['all', 'todolist']
+		localStorage.setItem('permissions', JSON.stringify(tempPermissions))
 		setTimeout(() => {
 			navigate('/')
 		}, 500)
