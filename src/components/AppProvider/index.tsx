@@ -4,7 +4,7 @@ import { NotificationContext } from '../../context/notification'
 import Toast from '../toast'
 import Header from '../Header'
 import './index.css'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 
 const AppProvider = ({ children }: any) => {
 
