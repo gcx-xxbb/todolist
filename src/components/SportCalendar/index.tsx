@@ -8,7 +8,7 @@ interface SportCalendarProps {
 const SportCalendar: React.FC<SportCalendarProps> = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [days, setDays] = useState<(number | null)[]>([]);
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     exerciseDays: 3,
     exerciseCount: 3,
     totalDuration: '2时58分',

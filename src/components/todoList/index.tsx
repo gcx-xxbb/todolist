@@ -4,7 +4,6 @@ import TodoContext from "../../context/TodoContext";
 import { NotificationContext } from "../../context/notification";
 
 interface Todo { id: string, title: string, isFinished: boolean }
-interface todoProps { todoList: Todo[], dispatch: React.Dispatch<TodoAction> }
 interface TodoItemProps { todo: Todo, dispatch: React.Dispatch<TodoAction>, index: number, setNotification: (message: string) => void }
 
 const TodoItem = React.memo(({ todo, dispatch, index, setNotification }: TodoItemProps) => {
@@ -58,35 +57,7 @@ const TodoList = () => {
 	}
 
 	useEffect(() => {
-		var exclusiveTime = function (n: number, logs: string[]) {
-			let res = new Array(n).fill(0)
-			let preTime = 0
-			let zhan = []
-			const getDate = (log: any) => {
-				let arr = log.split(':')
-				return { id: parseInt(arr[0]), status: arr[1], time: parseInt(arr[2]) }
-			}
-			for (let i = 0; i < logs.length; i++) {
-				if (i === 0) {
-					let { id, time } = getDate(logs[i])
-					zhan.push(id)
-					preTime = time
-					continue
-				}
-				let { id, status, time } = getDate(logs[i])
-				if (status === 'start') {
-					res[zhan[zhan.length - 1]] += time - preTime
-					zhan.push(id)
-					preTime = time
-				} else {
-					res[zhan[zhan.length - 1]] += time - preTime + 1
-					zhan.pop()
-					preTime = time + 1
-				}
-			}
-			return res
-		};
-		// exclusiveTime(2, ["0:start:0", "1:start:2", "1:end:5", "0:end:6"])
+		// 空的 useEffect，保持组件结构
 	}, [])
 
 	useEffect(() => {

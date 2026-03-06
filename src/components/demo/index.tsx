@@ -1,4 +1,3 @@
-import React from 'react';
 import SportCalendar from '../SportCalendar';
 
 const Demo = () => {
