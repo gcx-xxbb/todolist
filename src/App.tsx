@@ -21,7 +21,6 @@ function App() {
   const { user } = context;
 
 
-
   const reducer = (todos: Todo[], action: TodoAction): Todo[] => {
     switch (action.type) {
       case 'add':
@@ -36,7 +35,7 @@ function App() {
       default:
         return todos
     }
-  }
+  } 
 
   const [todos, dispatch] = useReducer(reducer, todoList)
 

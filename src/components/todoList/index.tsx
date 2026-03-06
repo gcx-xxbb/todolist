@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import type { TodoAction } from "../../App";
 import TodoContext from "../../context/TodoContext";
 import { NotificationContext } from "../../context/notification";
@@ -8,6 +8,12 @@ interface todoProps { todoList: Todo[], dispatch: React.Dispatch<TodoAction> }
 interface TodoItemProps { todo: Todo, dispatch: React.Dispatch<TodoAction>, index: number, setNotification: (message: string) => void }
 
 const TodoItem = React.memo(({ todo, dispatch, index, setNotification }: TodoItemProps) => {
+
+	const handleDelete = useCallback(() => {
+		setNotification('删除成功')
+		dispatch({ type: 'delete', payload: todo.id })
+	}, [todo.id])
+
 	return (
 		<tr key={todo.id}>
 			<td>{index + 1}</td>
@@ -16,8 +22,7 @@ const TodoItem = React.memo(({ todo, dispatch, index, setNotification }: TodoIte
 				<input onChange={() => { setNotification('修改成功'), dispatch({ type: 'finish', payload: todo.id }) }} type="checkbox" checked={todo.isFinished} />
 			</td>
 			<td>
-				<button onClick={() => { setNotification('删除成功'), dispatch({ type: 'delete', payload: todo.id }) }
-				}>删除</button>
+				<button onClick={handleDelete}>删除</button>
 			</td>
 		</tr>
 	)
@@ -51,6 +56,62 @@ const TodoList = () => {
 		setNewTodo('')
 		setShow(false)
 	}
+
+	useEffect(() => {
+		var exclusiveTime = function (n: number, logs: string[]) {
+			let res = new Array(n).fill(0)
+			let preTime = 0
+			let zhan = []
+			const getDate = (log: any) => {
+				let arr = log.split(':')
+				return { id: parseInt(arr[0]), status: arr[1], time: parseInt(arr[2]) }
+			}
+			for (let i = 0; i < logs.length; i++) {
+				if (i === 0) {
+					let { id, time } = getDate(logs[i])
+					zhan.push(id)
+					preTime = time
+					continue
+				}
+				let { id, status, time } = getDate(logs[i])
+				if (status === 'start') {
+					res[zhan[zhan.length - 1]] += time - preTime
+					zhan.push(id)
+					preTime = time
+				} else {
+					res[zhan[zhan.length - 1]] += time - preTime + 1
+					zhan.pop()
+					preTime = time + 1
+				}
+			}
+			return res
+		};
+		// exclusiveTime(2, ["0:start:0", "1:start:2", "1:end:5", "0:end:6"])
+	}, [])
+
+	useEffect(() => {
+		function finalPrices(prices: number[]): number[] {
+			let res: number[] = new Array(prices.length).fill(0)
+			let temp: number[] = []
+			let stack: number[] = []
+			for (let i = 0; i < prices.length; i++) {
+				const current = prices[i]
+				while (stack.length && current <= prices[stack[stack.length - 1]]) {
+					const topIndex = stack.pop()
+					temp[topIndex || 0] = current
+				}
+				stack.push(i)
+			}
+			prices.forEach((item, index) => {
+				let tempVal = item - temp[index]
+				res[index] = tempVal >= 0 ? tempVal : item
+			})
+			return res
+		}
+
+		finalPrices([10, 1, 1, 6]
+		)
+	}, [])
 
 
 	return (

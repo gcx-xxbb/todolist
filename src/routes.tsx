@@ -2,6 +2,7 @@ import type { ReactElement, ReactNode } from 'react';
 
 import App from './App';
 import Login from './components/login';
+import Demo from './components/demo';
 
 export interface AppRoute {
   path: string;
@@ -18,6 +19,10 @@ const routes: AppRoute[] = [
   {
     path: '/login',
     element: <Login />,
+  },
+  {
+    path: '/demo',
+    element: <Demo />,
   },
 ];
 
