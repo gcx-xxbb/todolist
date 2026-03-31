@@ -1,11 +1,24 @@
 const http = require('http');
+const _ = require('lodash');
+
+function timestampToTime(timestamp) {
+  timestamp = timestamp ? timestamp : null;
+  let date = new Date(timestamp); 
+  let Y = date.getFullYear() + '-';
+  let M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+  let D = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' ';
+  let h = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+  let m = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+  let s = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
+  return Y + M + D + h + m + s;
+}
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' });
-  res.write(`${new Date()}`);
+  res.write(`${timestampToTime(_.now())}`);
   res.end();
 });
 
 server.listen(8080);
 
-export default server;
+module.exports = server;
