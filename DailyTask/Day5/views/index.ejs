@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>用户中心</title>
+</head>
+
+<body>
+	<h1>欢迎来到用户中心</h1>
+
+	<hr>
+
+	<p>你好，我是 <strong>
+			<%= user.name %>
+		</strong>，今年 <%= user.age %> 岁。是个 <%= user.sex %>生。</p>
+
+	<% if (user.age>= 18) { %>
+		<p style="color: red;">✅ 已成年</p>
+		<% } else { %>
+			<p>未成年请由家长陪同。</p>
+			<% } %>
+
+				<hr>
+
+				<h3>我的爱好：</h3>
+				<ul>
+					<% user.hobbies.forEach(function(hobby) { %>
+						<li>
+							<%= hobby %>
+						</li>
+						<% }); %>
+				</ul>
+</body>
+
+</html>
