@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>用户列表</title>
+</head>
+
+<body>
+	<h1>用户列表</h1>
+	<table>
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>用户名</th>
+				<th>邮箱</th>
+			</tr>
+		</thead>
+		<tbody>
+			<% userList.forEach(function(user) { %>
+				<tr>
+					<td>
+						<%= user.id %>
+					</td>
+					<td>
+						<%= user.name %>
+					</td>
+					<td>
+						<%= user.email %>
+					</td>
+				</tr>
+				<% }); %>
+	</table>
+</body>
+
+</html>
