@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国象棋</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>中国象棋</h1>
+        
+        <div class="game-controls">
+            <select id="difficulty">
+                <option value="beginner">新手</option>
+                <option value="easy">初级</option>
+                <option value="medium">中级</option>
+                <option value="hard">高级</option>
+            </select>
+            <button id="start-btn">开始游戏</button>
+            <button id="restart-btn">重新开始</button>
+            <button id="undo-btn">悔棋</button>
+        </div>
+        
+        <div class="game-info">
+            <div id="status">准备开始</div>
+            <div id="turn">当前回合：红方</div>
+        </div>
+        
+        <div class="chessboard" id="chessboard">
+            <!-- 棋盘将由JavaScript生成 -->
+        </div>
+        
+        <div id="message"></div>
+    </div>
+    
+    <script src="chess.js"></script>
+    <script src="ai.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
