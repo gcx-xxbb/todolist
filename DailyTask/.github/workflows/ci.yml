@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Backend Dependencies
+        run: |
+          cd Blog
+          npm install
+
+      - name: Run Backend Tests
+        run: |
+          cd Blog
+          npm test
+        env:
+          MONGODB_URI: mongodb://localhost:27017/blog_test
+          JWT_SECRET: test-secret-key
+          JWT_EXPIRES_IN: 7d
+
+  frontend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd Blog_page
+          npm install
+
+      - name: Run Frontend Tests
+        run: |
+          cd Blog_page
+          npm test -- --coverage --watchAll=false
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./Blog_page/coverage

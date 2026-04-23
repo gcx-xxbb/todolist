@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国象棋</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>中国象棋</h1>
+
+        <div class="game-settings">
+            <div class="mode-section">
+                <label>游戏模式：</label>
+                <select id="gameMode">
+                    <option value="pvp">双人对战</option>
+                    <option value="pve">人机对战</option>
+                </select>
+            </div>
+
+            <div class="difficulty-section" id="difficultySection" style="display: none;">
+                <label>AI难度：</label>
+                <select id="difficulty">
+                    <option value="beginner">初级</option>
+                    <option value="easy">简单</option>
+                    <option value="medium">中等</option>
+                    <option value="hard">困难</option>
+                    <option value="expert">专家</option>
+                </select>
+            </div>
+
+            <div class="first-move-section" id="firstMoveSection" style="display: none;">
+                <label>先手方：</label>
+                <select id="firstMove">
+                    <option value="player">玩家</option>
+                    <option value="ai">AI</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="game-controls">
+            <button id="startBtn">开始游戏</button>
+            <button id="restartBtn">重新开始</button>
+            <button id="undoBtn" disabled>悔棋</button>
+            <button id="saveBtn">保存游戏</button>
+            <button id="loadBtn">加载游戏</button>
+        </div>
+
+        <div class="game-info">
+            <div id="status">请选择模式并开始游戏</div>
+            <div id="turn"></div>
+            <div id="checkWarning" class="check-warning" style="display: none;">将军！</div>
+        </div>
+
+        <div class="board-wrapper">
+            <div class="board" id="board"></div>
+        </div>
+
+        <div id="message"></div>
+
+        <div class="rules">
+            <h3>游戏规则</h3>
+            <ul>
+                <li>红方先行（默认），可选择先手方</li>
+                <li>将帅不能照面（同一列上不能没有棋子阻隔）</li>
+                <li>点击选中棋子，再点击目标位置移动</li>
+                <li>点击"保存游戏"可保存当前局面</li>
+                <li>点击"加载游戏"可读取存档</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="chess.js"></script>
+    <script src="chess-ai.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

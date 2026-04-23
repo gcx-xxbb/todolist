@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五子棋</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>五子棋</h1>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="pvp">双人对战</button>
+            <button class="mode-btn" data-mode="pve">人机对战</button>
+        </div>
+
+        <div class="difficulty-selector" id="difficultySelector" style="display: none;">
+            <label>AI难度：</label>
+            <select id="difficulty">
+                <option value="beginner">新手</option>
+                <option value="easy">初级</option>
+                <option value="medium">中级</option>
+                <option value="hard">高级</option>
+                <option value="expert">专家</option>
+            </select>
+        </div>
+
+        <div class="game-controls">
+            <button id="start-btn">开始游戏</button>
+            <button id="restart-btn">重新开始</button>
+            <button id="undo-btn" disabled>悔棋</button>
+        </div>
+
+        <div class="game-info">
+            <div id="status">请选择模式并开始游戏</div>
+            <div id="turn">当前回合：黑方</div>
+        </div>
+
+        <div class="board-container">
+            <div class="board" id="board"></div>
+        </div>
+
+        <div id="message"></div>
+
+        <div class="rules">
+            <h3>游戏规则</h3>
+            <ul>
+                <li>黑方先行，双方轮流落子</li>
+                <li>任意方向（横、竖、斜）连成五子获胜</li>
+                <li>点击棋盘交叉点落子</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="gobang.js"></script>
+    <script src="gobang-ai.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
