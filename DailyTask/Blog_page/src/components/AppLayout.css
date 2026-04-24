@@ -1,0 +1,230 @@
+.app-layout {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 64px;
+  padding: 0 24px;
+  background-color: var(--bg-primary);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  text-decoration: none;
+}
+
+.logo-text {
+  color: var(--text-primary);
+  transition: color 0.25s ease;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  height: 40px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.nav-item.active {
+  color: var(--accent);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle-btn,
+.search-btn {
+  color: var(--text-secondary) !important;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover,
+.search-btn:hover {
+  color: var(--text-primary) !important;
+  background-color: var(--bg-tertiary) !important;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  height: 40px;
+}
+
+.user-avatar:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.username {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.25s ease;
+}
+
+.main-content {
+  margin-top: 64px;
+  min-height: calc(100vh - 64px - 80px);
+  background-color: var(--bg-primary);
+  transition: background-color 0.25s ease;
+}
+
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.app-footer {
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: 24px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--accent);
+  background-color: var(--bg-tertiary);
+}
+
+.footer-copyright {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+}
+
+.search-modal {
+  width: 640px;
+  max-width: 90vw;
+  background-color: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: fadeInUp 0.3s ease-out;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.search-input .ant-input-search-large .ant-input-group-addon,
+.search-input .ant-input-search-large input {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  font-size: 18px !important;
+}
+
+.search-input .ant-input-search-large .ant-input-group-addon {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.search-hints {
+  text-align: center;
+  margin-top: 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .nav-menu {
+    display: none;
+  }
+
+  .username {
+    display: none;
+  }
+
+  .content-wrapper {
+    padding: 20px 16px;
+  }
+}

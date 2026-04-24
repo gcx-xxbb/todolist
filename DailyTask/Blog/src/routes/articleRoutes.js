@@ -18,6 +18,8 @@ router.get('/',
 
 router.get('/my', authenticate, articleController.getMyArticles);
 
+router.get('/favorites', authenticate, articleController.getMyFavorites);
+
 router.get('/:id', articleController.getArticleById);
 
 router.post('/',

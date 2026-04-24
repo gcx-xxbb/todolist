@@ -14,6 +14,7 @@ export const articleApi = {
   getArticles: (params) => api.get('/articles', { params }),
   getArticleById: (id) => api.get(`/articles/${id}`),
   getMyArticles: () => api.get('/articles/my'),
+  getMyFavorites: (params) => api.get('/articles/favorites', { params }),
   createArticle: (data) => api.post('/articles', data),
   updateArticle: (id, data) => api.post(`/articles/${id}/update`, data),
   deleteArticle: (id) => api.post(`/articles/${id}/delete`),

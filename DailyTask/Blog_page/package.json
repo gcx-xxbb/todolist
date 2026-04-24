@@ -11,7 +11,8 @@
     "axios": "^1.6.2",
     "dayjs": "^1.11.10",
     "react-markdown": "^9.0.1",
-    "react-syntax-highlighter": "^15.5.0"
+    "react-syntax-highlighter": "^15.5.0",
+    "remark-gfm": "^4.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",

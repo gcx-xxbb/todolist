@@ -1,39 +1,60 @@
-import { useState, useEffect } from 'react';
-import { Row, Col, Card, Input, Select, Spin, Empty, Tag, Pagination } from 'antd';
-import { useNavigate } from 'react-router-dom';
-import { FileTextOutlined } from '@ant-design/icons';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Input, Tag, Button, Empty, Spin, Pagination } from 'antd';
+import { SearchOutlined, EyeOutlined, HeartOutlined, CalendarOutlined, FileTextOutlined } from '@ant-design/icons';
 import { articleApi, categoryApi, tagApi } from '../../services';
-
-const { Search } = Input;
+import dayjs from 'dayjs';
+import './ArticleList.css';
 
 const ArticleList = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
-  const [filters, setFilters] = useState({ search: '', category: '', tag: '', status: 'published' });
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
+  const fetchCountRef = useRef(0);
 
   useEffect(() => {
-    fetchCategories();
-    fetchTags();
-  }, []);
+    console.log(1234);
+    
+    fetchCountRef.current = 0;
+    
+    const fetchData = async () => {
+      if (fetchCountRef.current > 0) return;
+      fetchCountRef.current++;
+      
+      await Promise.all([
+        fetchArticles(),
+        fetchCategories(),
+        fetchTags()
+      ]);
+    };
 
-  useEffect(() => {
-    fetchArticles();
-  }, [pagination.page, filters]);
+    fetchData();
+  }, [searchParams]);
 
   const fetchArticles = async () => {
     setLoading(true);
     try {
-      const data = await articleApi.getArticles({
-        page: pagination.page,
-        limit: pagination.limit,
-        ...filters
-      });
-      setArticles(data.data.articles);
-      setPagination(prev => ({ ...prev, total: data.data.pagination.total }));
+      const params = {
+        page: pagination.current,
+        limit: pagination.pageSize,
+        status: 'published'
+      };
+      
+      if (searchValue) params.search = searchValue;
+      if (searchParams.get('category')) params.category = searchParams.get('category');
+      if (searchParams.get('tag')) params.tag = searchParams.get('tag');
+
+      const data = await articleApi.getArticles(params);
+      setArticles(data.data.articles || []);
+      setPagination(prev => ({
+        ...prev,
+        total: data.data.pagination?.total || 0
+      }));
     } catch (error) {
       console.error(error);
     } finally {
@@ -44,119 +65,131 @@ const ArticleList = () => {
   const fetchCategories = async () => {
     try {
       const data = await categoryApi.getCategories();
-      setCategories(data.data.categories);
-    } catch (error) {
-      console.error(error);
-    }
+      setCategories(data.data.categories || []);
+    } catch (error) {}
   };
 
   const fetchTags = async () => {
     try {
       const data = await tagApi.getTags();
-      setTags(data.data.tags);
-    } catch (error) {
-      console.error(error);
-    }
+      setTags(data.data.tags || []);
+    } catch (error) {}
   };
 
   const handleSearch = (value) => {
-    setFilters(prev => ({ ...prev, search: value }));
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setSearchValue(value);
+    if (value.trim()) {
+      setSearchParams({ search: value });
+    } else {
+      setSearchParams({});
+    }
   };
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setPagination(prev => ({ ...prev, page: 1 }));
+  const handleCategoryFilter = (categoryId) => {
+    if (categoryId) {
+      setSearchParams({ category: categoryId });
+    } else {
+      setSearchParams({});
+    }
   };
 
-  const handlePageChange = (page) => {
-    setPagination(prev => ({ ...prev, page }));
+  const handlePageChange = (page, pageSize) => {
+    setPagination(prev => ({ ...prev, current: page, pageSize }));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div>
-      <Card className="filter-section">
-        <div className="filter-row">
-          <div className="search-wrapper">
-            <Search placeholder="搜索文章..." onSearch={handleSearch} enterButton />
-          </div>
-          <div className="filter-item">
-            <Select
-              placeholder="选择分类"
-              allowClear
-              style={{ width: '100%' }}
-              onChange={(value) => handleFilterChange('category', value)}
+    <div className="article-list-page">
+      <div className="list-header">
+        <h1 className="page-title">文章</h1>
+        <p className="page-subtitle">已按发布时间排序，分享思考与探索。</p>
+        
+        <div className="filter-bar">
+          <Input.Search
+            placeholder="搜索文章..."
+            value={searchValue}
+            onChange={e => setSearchValue(e.target.value)}
+            onSearch={handleSearch}
+            allowClear
+            className="search-input"
+          />
+          
+          <div className="category-filters">
+            <Tag 
+              onClick={() => handleCategoryFilter(null)}
+              className={`category-tag ${!searchParams.get('category') ? 'active' : ''}`}
             >
-              {categories.map(cat => (
-                <Select.Option key={cat._id} value={cat._id}>{cat.name}</Select.Option>
-              ))}
-            </Select>
-          </div>
-          <div className="filter-item">
-            <Select
-              placeholder="选择标签"
-              allowClear
-              style={{ width: '100%' }}
-              onChange={(value) => handleFilterChange('tag', value)}
-            >
-              {tags.map(tag => (
-                <Select.Option key={tag._id} value={tag._id}>{tag.name}</Select.Option>
-              ))}
-            </Select>
-          </div>
-        </div>
-      </Card>
-
-      {loading ? (
-        <div className="center-content">
-          <Spin size="large" />
-        </div>
-      ) : articles.length === 0 ? (
-        <Empty description="暂无文章" />
-      ) : (
-        <>
-          <Row gutter={[16, 16]}>
-            {articles.map(article => (
-              <Col xs={24} sm={12} md={8} key={article._id}>
-                <Card
-                  className="article-card"
-                  onClick={() => navigate(`/article/${article._id}`)}
-                >
-                  <div className="article-cover">
-                    <FileTextOutlined />
-                  </div>
-                  <Card.Meta
-                    title={article.title}
-                    description={
-                      <>
-                        <div className="article-meta">
-                          <Tag color="blue">{article.author?.username}</Tag>
-                          <span>{article.likeCount} 点赞</span>
-                          <span>{article.views} 阅读</span>
-                        </div>
-                        <div className="article-tags">
-                          {article.tags?.map(tag => (
-                            <Tag key={tag._id}>{tag.name}</Tag>
-                          ))}
-                        </div>
-                      </>
-                    }
-                  />
-                </Card>
-              </Col>
+              全部
+            </Tag>
+            {categories.slice(0, 8).map(cat => (
+              <Tag 
+                key={cat._id} 
+                onClick={() => handleCategoryFilter(cat._id)}
+                className={`category-tag ${searchParams.get('category') === cat._id ? 'active' : ''}`}
+              >
+                {cat.name}
+              </Tag>
             ))}
-          </Row>
-          <div style={{ textAlign: 'center', marginTop: 24 }}>
-            <Pagination
-              current={pagination.page}
-              pageSize={pagination.limit}
-              total={pagination.total}
-              onChange={handlePageChange}
-              showSizeChanger={false}
-            />
           </div>
-        </>
-      )}
+
+          <div className="tag-filters">
+            {tags.slice(0, 12).map(tag => (
+              <span key={tag._id} className="tag-item">{tag.name}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="article-list-container">
+        {loading ? (
+          <div className="loading-wrapper"><Spin size="large" /></div>
+        ) : articles.length === 0 ? (
+          <Empty description="暂无文章" />
+        ) : (
+          <div className="article-list">
+            {articles.map((article, index) => (
+              <div 
+                key={article._id} 
+                className="article-list-item"
+                style={{ animationDelay: `${index * 0.03}s` }}
+                onClick={() => navigate(`/article/${article._id}`)}
+              >
+                <div className="item-icon">
+                  <FileTextOutlined />
+                </div>
+                <div className="item-content">
+                  <h3 className="item-title">{article.title}</h3>
+                  <p className="item-excerpt">
+                    {article.content?.replace(/[#*`\[\]]/g, '').substring(0, 120)}...
+                  </p>
+                </div>
+                <div className="item-meta">
+                  {article.tags?.slice(0, 2).map(tag => (
+                    <Tag key={tag._id} color="blue" size="small">{tag.name}</Tag>
+                  ))}
+                  <span className="meta-date">
+                    <CalendarOutlined /> {dayjs(article.createdAt).format('YYYY-MM-DD')}
+                  </span>
+                  <span className="meta-views">
+                    <EyeOutlined /> {article.views || 0}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && pagination.total > pagination.pageSize && (
+          <Pagination
+            current={pagination.current}
+            pageSize={pagination.pageSize}
+            total={pagination.total}
+            onChange={handlePageChange}
+            showSizeChanger={false}
+            className="pagination"
+          />
+        )}
+      </div>
     </div>
   );
 };

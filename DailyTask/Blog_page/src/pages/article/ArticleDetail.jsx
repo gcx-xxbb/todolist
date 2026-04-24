@@ -1,12 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Spin, Tag, Button, message, Avatar, List, Input, Popconfirm, Row, Col } from 'antd';
-import { LikeOutlined, EditOutlined, DeleteOutlined, UserOutlined, StarOutlined } from '@ant-design/icons';
+import { Card, Spin, Tag, Button, message, Avatar, List, Input, Popconfirm } from 'antd';
+import {
+  LikeOutlined,
+  LikeFilled,
+  EditOutlined,
+  DeleteOutlined,
+  UserOutlined,
+  StarOutlined,
+  StarFilled,
+  CalendarOutlined,
+  EyeOutlined,
+  ArrowLeftOutlined
+} from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import oneDark from 'react-syntax-highlighter/dist/esm/styles/prism/one-dark';
 import { articleApi, commentApi } from '../../services';
 import { useAuth } from '../../contexts';
 import dayjs from 'dayjs';
+import './ArticleDetail.css';
 
 const { TextArea } = Input;
 
@@ -14,6 +28,7 @@ const ArticleDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const contentRef = useRef(null);
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState([]);
@@ -21,29 +36,82 @@ const ArticleDetail = () => {
   const [commentContent, setCommentContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [relatedArticles, setRelatedArticles] = useState([]);
+  const [tocItems, setTocItems] = useState([]);
+  const [activeTocId, setActiveTocId] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
   const fetchCountRef = useRef(0);
 
   useEffect(() => {
     fetchCountRef.current = 0;
-
     const fetchData = async () => {
       if (fetchCountRef.current > 0) return;
       fetchCountRef.current++;
-
-      await Promise.all([
-        fetchArticle(),
-        fetchComments(),
-        fetchRelatedArticles()
-      ]);
+      await Promise.all([fetchArticle(), fetchComments(), fetchRelatedArticles()]);
     };
-
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if (article?.likes && user?._id) {
+      setIsLiked(article.likes.includes(user._id));
+    }
+    if (article?.favorites && user?._id) {
+      setIsFavorited(article.favorites.includes(user._id));
+    }
+    if (!user?._id) {
+      setIsLiked(false);
+      setIsFavorited(false);
+    }
+  }, [user?._id, article?.likes, article?.favorites]);
+
+  useEffect(() => {
+    if (article?.content) {
+      extractHeadings();
+    }
+  }, [article?.content]);
+
+  useEffect(() => {
+    if (!tocItems.length) return;
+    
+    const handleScroll = () => {
+      const headings = document.querySelectorAll('.article-content h2, .article-content h3');
+      let currentId = '';
+      
+      headings.forEach((heading) => {
+        const rect = heading.getBoundingClientRect();
+        if (rect.top <= 100) {
+          currentId = heading.id;
+        }
+      });
+      
+      setActiveTocId(currentId);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [tocItems.length]);
+
+  const extractHeadings = () => {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = article.content || '';
+    const headings = Array.from(tempDiv.querySelectorAll('h2, h3')).map((h, index) => ({
+      id: `heading-${index}`,
+      text: h.textContent.replace(/^#\s*/, ''),
+      level: h.tagName === 'H2' ? 2 : 3
+    }));
+    setTocItems(headings);
+  };
 
   const fetchArticle = async () => {
     try {
       const data = await articleApi.getArticleById(id);
-      setArticle(data.data.article);
+      const articleData = data.data.article;
+      setArticle(articleData);
+      if (user?._id) {
+        setIsLiked(articleData.likes?.includes(user._id));
+        setIsFavorited(articleData.favorites?.includes(user._id));
+      }
     } catch (error) {
       message.error('获取文章失败');
       navigate('/');
@@ -57,9 +125,8 @@ const ArticleDetail = () => {
     try {
       const data = await commentApi.getCommentsByArticle(id);
       setComments(data.data.comments);
-    } catch (error) {
-      console.error(error);
-    } finally {
+    } catch (error) {}
+    finally {
       setCommentLoading(false);
     }
   };
@@ -68,37 +135,32 @@ const ArticleDetail = () => {
     try {
       const data = await articleApi.getRelatedArticles(id);
       setRelatedArticles(data.data.articles || []);
-    } catch (error) {
-      console.error(error);
+    } catch (error) {}
+  };
+
+  const scrollToHeading = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   const handleLike = async () => {
-    if (!isAuthenticated) {
-      message.warning('请先登录');
-      return;
-    }
+    if (!isAuthenticated) { message.warning('请先登录'); return; }
     try {
       const data = await articleApi.likeArticle(id);
       setArticle(prev => ({ ...prev, likeCount: data.data.likeCount }));
-      message.success(data.data.isLiked ? '点赞成功' : '取消点赞');
-    } catch (error) {
-      message.error(error.message);
-    }
+      setIsLiked(data.data.isLiked);
+    } catch (error) { message.error(error.message); }
   };
 
   const handleFavorite = async () => {
-    if (!isAuthenticated) {
-      message.warning('请先登录');
-      return;
-    }
+    if (!isAuthenticated) { message.warning('请先登录'); return; }
     try {
       const data = await articleApi.favoriteArticle(id);
       setArticle(prev => ({ ...prev, favoriteCount: data.data.favoriteCount }));
-      message.success(data.data.isFavorited ? '收藏成功' : '取消收藏');
-    } catch (error) {
-      message.error(error.message);
-    }
+      setIsFavorited(data.data.isFavorited);
+    } catch (error) { message.error(error.message); }
   };
 
   const handleDelete = async () => {
@@ -106,31 +168,20 @@ const ArticleDetail = () => {
       await articleApi.deleteArticle(id);
       message.success('删除成功');
       navigate('/');
-    } catch (error) {
-      message.error(error.message);
-    }
+    } catch (error) { message.error(error.message); }
   };
 
   const handleComment = async () => {
-    if (!isAuthenticated) {
-      message.warning('请先登录');
-      return;
-    }
-    if (!commentContent.trim()) {
-      message.warning('请输入评论内容');
-      return;
-    }
+    if (!isAuthenticated) { message.warning('请先登录'); return; }
+    if (!commentContent.trim()) { message.warning('请输入评论内容'); return; }
     setSubmitting(true);
     try {
       await commentApi.createComment({ content: commentContent, article: id });
       setCommentContent('');
       message.success('评论成功');
       fetchComments();
-    } catch (error) {
-      message.error(error.message);
-    } finally {
-      setSubmitting(false);
-    }
+    } catch (error) { message.error(error.message); }
+    finally { setSubmitting(false); }
   };
 
   const handleDeleteComment = async (commentId) => {
@@ -138,145 +189,211 @@ const ArticleDetail = () => {
       await commentApi.deleteComment(commentId);
       message.success('删除成功');
       fetchComments();
-    } catch (error) {
-      message.error(error.message);
-    }
+    } catch (error) { message.error(error.message); }
   };
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: 50 }}><Spin size="large" /></div>;
+    return <div className="detail-loading"><Spin size="large" /></div>;
   }
 
-  if (!article) {
-    return null;
-  }
+  if (!article) return null;
 
   const isAuthor = user?._id === article.author?._id || user?.role === 'admin';
 
   return (
-    <Row gutter={16}>
-      <Col xs={24} lg={16}>
-        <Card
-          title={<h2 style={{ margin: 0 }}>{article.title}</h2>}
-          extra={
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Button icon={<LikeOutlined />} onClick={handleLike}>
-                {article.likeCount || 0}
-              </Button>
-              <Button icon={<StarOutlined />} onClick={handleFavorite}>
-                {article.favoriteCount || 0}
-              </Button>
-              {isAuthor && (
-                <>
-                  <Button icon={<EditOutlined />} onClick={() => navigate(`/article/edit/${article._id}`)} />
-                  <Popconfirm title="确定删除?" onConfirm={handleDelete}>
-                    <Button icon={<DeleteOutlined />} danger />
-                  </Popconfirm>
-                </>
-              )}
-            </div>
-          }
+    <div className="article-detail-page">
+      <div className="detail-header">
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate('/article')}
+          className="back-btn"
         >
-          <div style={{ marginBottom: 16 }}>
-            <Avatar icon={<UserOutlined />} src={article.author?.avatar} />
-            <span style={{ marginLeft: 8 }}>{article.author?.username}</span>
-            <span style={{ marginLeft: 16, color: '#999' }}>{dayjs(article.createdAt).format('YYYY-MM-DD HH:mm')}</span>
-            <span style={{ marginLeft: 16 }}>阅读 {article.views || 0}</span>
+          返回列表
+        </Button>
+        
+        <div className="header-info">
+          <h1 className="article-title">{article.title}</h1>
+          <div className="meta-row">
+            <span className="meta-item">
+              <Avatar size={24} src={article.author?.avatar} style={{ backgroundColor: 'var(--accent)' }}>
+                {article.author?.username?.[0]}
+              </Avatar>
+              {article.author?.username}
+            </span>
+            <span className="meta-item"><CalendarOutlined /> {dayjs(article.createdAt).format('YYYY-MM-DD')}</span>
+            <span className="meta-item"><EyeOutlined /> {article.views || 0}</span>
           </div>
-          <div style={{ marginBottom: 16 }}>
+          <div className="tag-row">
             {article.tags?.map(tag => (
-              <Tag key={tag._id} color="blue">{tag.name}</Tag>
+              <Tag key={tag._id}>{tag.name}</Tag>
             ))}
-            {article.category && <Tag color="green">{article.category.name}</Tag>}
+            {article.category && <Tag color="blue">{article.category.name}</Tag>}
           </div>
+          <div className="action-bar">
+            <Button
+              type={isLiked ? 'primary' : 'default'}
+              icon={isLiked ? <LikeFilled /> : <LikeOutlined />}
+              onClick={handleLike}
+            >
+              {article.likeCount || 0}
+            </Button>
+            <Button
+              type={isFavorited ? 'primary' : 'default'}
+              icon={isFavorited ? <StarFilled /> : <StarOutlined />}
+              onClick={handleFavorite}
+            >
+              {article.favoriteCount || 0}
+            </Button>
+            {isAuthor && (
+              <>
+                <Button icon={<EditOutlined />} onClick={() => navigate(`/article/edit/${article._id}`)} />
+                <Popconfirm title="确定删除?" onConfirm={handleDelete}>
+                  <Button icon={<DeleteOutlined />} danger />
+                </Popconfirm>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="detail-body">
+        <div className="content-area" ref={contentRef}>
           <div className="article-content">
             <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               components={{
                 code({ node, inline, className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className || '');
-                  return !inline && match ? (
-                    <SyntaxHighlighter
-                      language={match[1]}
-                      PreTag="div"
+                  if (!inline && match) {
+                    return (
+                      <SyntaxHighlighter
+                        language={match[1]}
+                        PreTag="div"
+                        style={oneDark}
+                        customStyle={{ margin: '20px 0', borderRadius: '8px', fontSize: '14px' }}
+                        showLineNumbers
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, '')}
+                      </SyntaxHighlighter>
+                    );
+                  }
+                  return (
+                    <code
+                      style={{
+                        backgroundColor: 'var(--code-bg)',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '0.9em',
+                        color: '#e06c75'
+                      }}
                       {...props}
                     >
-                      {String(children).replace(/\n$/, '')}
-                    </SyntaxHighlighter>
-                  ) : (
-                    <code className={className} {...props}>
                       {children}
                     </code>
                   );
+                },
+                table({ children }) {
+                  return <table>{children}</table>;
+                },
+                th({ children }) {
+                  return <th>{children}</th>;
+                },
+                td({ children }) {
+                  return <td>{children}</td>;
                 }
               }}
             >
               {article.content}
             </ReactMarkdown>
           </div>
-        </Card>
+        </div>
 
-        <Card title="评论" style={{ marginTop: 16 }} loading={commentLoading}>
-          {isAuthenticated && (
-            <div style={{ marginBottom: 16 }}>
-              <TextArea
-                rows={3}
-                placeholder="发表你的评论..."
-                value={commentContent}
-                onChange={(e) => setCommentContent(e.target.value)}
-              />
-              <Button type="primary" onClick={handleComment} loading={submitting} style={{ marginTop: 8 }}>
-                发表评论
-              </Button>
-            </div>
-          )}
-          <List
-            dataSource={comments}
-            renderItem={(item) => (
-              <List.Item
-                actions={[
-                  (user?._id === item.author?._id || user?.role === 'admin') && (
-                    <Popconfirm key="delete" title="确定删除?" onConfirm={() => handleDeleteComment(item._id)}>
-                      <Button type="link" danger size="small">删除</Button>
-                    </Popconfirm>
-                  )
-                ].filter(Boolean)}
-              >
-                <List.Item.Meta
-                  avatar={<Avatar icon={<UserOutlined />} src={item.author?.avatar} />}
-                  title={item.author?.username}
-                  description={dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')}
-                />
-                <div>{item.content}</div>
-              </List.Item>
-            )}
-          />
-        </Card>
-      </Col>
+        {tocItems.length > 0 && (
+          <aside className="toc-sidebar">
+            <div className="toc-title">目录</div>
+            <nav className="toc-nav">
+              {tocItems.map((item, index) => (
+                <a
+                  key={index}
+                  href={`#heading-${index}`}
+                  className={`toc-item ${activeTocId === `heading-${index}` ? 'active' : ''}`}
+                  style={{ paddingLeft: `${(item.level - 2) * 12 + 16}px` }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToHeading(`heading-${index}`);
+                  }}
+                >
+                  {item.text}
+                </a>
+              ))}
+            </nav>
+          </aside>
+        )}
 
-      <Col xs={24} lg={8}>
-        <Card title="相关文章" loading={loading}>
-          {relatedArticles.length > 0 ? (
-            <List
-              size="small"
-              dataSource={relatedArticles}
-              renderItem={(item) => (
-                <List.Item
-                  style={{ cursor: 'pointer' }}
+        <aside className="related-sidebar">
+          <div className="sidebar-section">
+            <h3 className="sidebar-title">相关文章</h3>
+            <div className="related-list">
+              {relatedArticles.map((item) => (
+                <div
+                  key={item._id}
+                  className="related-item"
                   onClick={() => navigate(`/article/${item._id}`)}
                 >
-                  <List.Item.Meta
-                    title={item.title}
-                    description={`阅读 ${item.views || 0}`}
-                  />
-                </List.Item>
+                  <h4>{item.title}</h4>
+                  <p>阅读 {item.views || 0}</p>
+                </div>
+              ))}
+              {relatedArticles.length === 0 && (
+                <p className="empty-text">暂无相关文章</p>
               )}
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <section className="comments-section">
+        <h2 className="section-heading">评论</h2>
+        {isAuthenticated && (
+          <div className="comment-form">
+            <TextArea
+              rows={3}
+              placeholder="发表你的评论..."
+              value={commentContent}
+              onChange={(e) => setCommentContent(e.target.value)}
             />
-          ) : (
-            <div style={{ color: '#999', textAlign: 'center', padding: 20 }}>暂无相关文章</div>
+            <Button type="primary" onClick={handleComment} loading={submitting}>
+              发表评论
+            </Button>
+          </div>
+        )}
+        <List
+          dataSource={comments}
+          loading={commentLoading}
+          renderItem={(item) => (
+            <List.Item
+              actions={[
+                (user?._id === item.author?._id || user?.role === 'admin') && (
+                  <Popconfirm key="delete" title="确定删除?" onConfirm={() => handleDeleteComment(item._id)}>
+                    <Button type="link" danger size="small">删除</Button>
+                  </Popconfirm>
+                )
+              ].filter(Boolean)}
+            >
+              <List.Item.Meta
+                avatar={<Avatar icon={<UserOutlined />} src={item.author?.avatar} />}
+                title={item.author?.username}
+                description={dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')}
+              />
+              <div className="comment-content">{item.content}</div>
+            </List.Item>
           )}
-        </Card>
-      </Col>
-    </Row>
+        />
+      </section>
+    </div>
   );
 };
 

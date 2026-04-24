@@ -73,7 +73,7 @@ exports.updateTag = async (req, res, next) => {
     const tag = await Tag.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!tag) {

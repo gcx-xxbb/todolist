@@ -1,146 +1,227 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg-primary: #0f1115;
+  --bg-secondary: #151821;
+  --bg-tertiary: #1c1f2e;
+  --bg-card: #161922;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  
+  --text-primary: #e6e6e6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-glow: rgba(59, 130, 246, 0.3);
+  
+  --code-bg: #1a1d27;
+  
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: dark;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-card: #ffffff;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.15);
+  
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-glow: rgba(59, 130, 246, 0.2);
+  
+  --code-bg: #f3f4f6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
   min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-.layout-container {
-  min-height: 100vh;
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.content-wrapper {
+a:hover {
+  color: var(--accent-hover);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+.article-content {
+  max-width: 720px;
+  margin: 0 auto;
   padding: 24px;
-  max-width: 1400px;
-  /* margin: 0 auto; */
-  background: #f0f2f5;
-  min-height: calc(100vh - 64px);
+  font-size: 16px;
+  line-height: 1.8;
 }
 
-@media (max-width: 768px) {
-  .content-wrapper {
-    padding: 12px;
-  }
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+  color: var(--text-primary);
+  margin-top: 32px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
-@media (min-width: 1200px) {
-  .content-wrapper {
-    padding: 32px;
-  }
+.article-content h1 { font-size: 32px; }
+.article-content h2 { 
+  font-size: 26px; 
+  padding-bottom: 12px; 
+  border-bottom: 1px solid var(--border-color); 
+}
+.article-content h3 { font-size: 22px; }
+
+.article-content p {
+  margin-bottom: 16px;
+  color: var(--text-secondary);
 }
 
-.article-card {
-  height: 100%;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+.article-content a {
+  color: var(--accent);
+  text-decoration: none;
 }
 
-.article-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.article-content a:hover {
+  text-decoration: underline;
 }
 
-.article-cover {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 160px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  font-size: 48px;
+.article-content code:not(pre code) {
+  background-color: var(--code-bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  font-size: 0.9em;
+  color: #e06c75;
 }
 
-.article-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+.article-content pre {
+  margin: 20px 0;
+  border-radius: 8px;
+  overflow-x: auto;
 }
 
-.article-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 8px;
+.article-content blockquote {
+  border-left: 4px solid var(--accent);
+  padding: 12px 20px;
+  margin: 20px 0;
+  background-color: var(--bg-tertiary);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
 }
 
-.filter-section {
+.article-content blockquote p {
+  margin: 0;
+  font-style: italic;
+}
+
+.article-content img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.article-content ul,
+.article-content ol {
+  padding-left: 24px;
   margin-bottom: 16px;
 }
 
-.filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
+.article-content li {
+  margin-bottom: 8px;
+  color: var(--text-secondary);
 }
 
-.filter-item {
-  min-width: 150px;
-  flex: 1;
-  max-width: 300px;
+.article-content hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 32px 0;
 }
 
-@media (max-width: 576px) {
-  .filter-row {
-    flex-direction: column;
-  }
-
-  .filter-item {
-    width: 100%;
-    max-width: none;
-  }
-}
-
-.search-wrapper {
+.article-content table {
   width: 100%;
-  max-width: 300px;
+  border-collapse: collapse;
+  margin: 16px 0;
+  border: 1px solid var(--border-color);
 }
 
-@media (max-width: 576px) {
-  .search-wrapper {
-    max-width: none;
-  }
+.article-content th,
+.article-content td {
+  border: 1px solid var(--border-color);
+  padding: 10px 14px;
+  text-align: left;
 }
 
-.center-content {
-  text-align: center;
-  padding: 50px 0;
-}
-
-.page-title {
-  font-size: 24px;
+.article-content th {
+  background-color: var(--bg-tertiary);
   font-weight: 600;
-  margin-bottom: 24px;
+  color: var(--text-primary);
 }
 
-.form-container {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-@media (max-width: 576px) {
-  .page-title {
-    font-size: 20px;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.ant-card-meta-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.ant-card-meta-description {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
 }

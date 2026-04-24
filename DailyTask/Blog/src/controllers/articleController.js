@@ -66,12 +66,43 @@ exports.getAllArticles = async (req, res, next) => {
   }
 };
 
+exports.getMyFavorites = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const [articles, total] = await Promise.all([
+      Article.find({ favorites: req.user._id })
+        .populate(['author', { path: 'author', select: 'username avatar' }, 'tags', 'category'])
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      Article.countDocuments({ favorites: req.user._id })
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        articles,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.getArticleById = async (req, res, next) => {
   try {
     const article = await Article.findByIdAndUpdate(
       req.params.id,
       { $inc: { views: 1 } },
-      { new: true }
+      { returnDocument: 'after' }
     ).populate([
       { path: 'author', select: 'username avatar bio' },
       { path: 'tags' },
@@ -112,7 +143,7 @@ exports.updateArticle = async (req, res, next) => {
     const updatedArticle = await Article.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     ).populate(['author', 'tags', 'category']);
 
     res.status(200).json({

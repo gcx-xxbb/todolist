@@ -104,7 +104,9 @@ const ArticleForm = () => {
         </Form.Item>
 
         <Form.Item label="分类" name="category">
-          <Select placeholder="选择分类" allowClear>
+          <Select placeholder="选择分类" allowClear showSearch filterOption={(input, option) =>
+            option.children.toLowerCase().includes(input.toLowerCase())
+          }>
             {categories.map(cat => (
               <Select.Option key={cat._id} value={cat._id}>{cat.name}</Select.Option>
             ))}
@@ -112,7 +114,16 @@ const ArticleForm = () => {
         </Form.Item>
 
         <Form.Item label="标签" name="tags">
-          <Select mode="multiple" placeholder="选择标签" allowClear>
+          <Select
+            mode="multiple"
+            placeholder="选择标签"
+            allowClear
+            showSearch
+            filterOption={(input, option) =>
+              option.children.toLowerCase().includes(input.toLowerCase())
+            }
+            notFoundContent={<span style={{ color: '#999' }}>暂无数据</span>}
+          >
             {tags.map(tag => (
               <Select.Option key={tag._id} value={tag._id}>{tag.name}</Select.Option>
             ))}

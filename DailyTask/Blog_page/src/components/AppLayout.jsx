@@ -1,118 +1,185 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Layout, Menu, Button, Avatar, Dropdown, Space } from 'antd';
+import { useState } from 'react';
+import { Layout, Avatar, Dropdown, Button, Tooltip, Input } from 'antd';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   HomeOutlined,
+  FileTextOutlined,
   UserOutlined,
-  PlusOutlined,
-  TagsOutlined,
-  FolderOutlined,
+  SearchOutlined,
+  GithubOutlined,
   LogoutOutlined,
+  EditOutlined,
+  TagOutlined,
+  AppstoreOutlined,
+  SunOutlined,
+  MoonOutlined,
+  StarOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts';
+import { useTheme } from '../contexts/ThemeContext';
+import './AppLayout.css';
 
-const { Header, Content } = Layout;
+const { Header, Content, Footer } = Layout;
 
-const { SubMenu } = Menu;
-
-const AppLayout = ({ children }) => {
+const AppLayout = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  const userMenu = (
-    <Menu>
-      <Menu.Item key="profile" icon={<UserOutlined />} onClick={() => navigate('/profile')}>
-        个人资料
-      </Menu.Item>
-      <Menu.Item key="password" onClick={() => navigate('/change-password')}>
-        修改密码
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
-        退出登录
-      </Menu.Item>
-    </Menu>
-  );
+  const isAdmin = user?.role === 'admin';
 
   const menuItems = [
-    {
-      key: 'home',
-      icon: <HomeOutlined />,
-      label: <Link to="/">首页</Link>,
-    },
-    ...(user?.role === 'admin'
-      ? [
-          {
-            key: 'manage',
-            label: '管理',
-            children: [
-              {
-                key: 'category',
-                icon: <FolderOutlined />,
-                label: <Link to="/category/manage">分类管理</Link>,
-              },
-              {
-                key: 'tag',
-                icon: <TagsOutlined />,
-                label: <Link to="/tag/manage">标签管理</Link>,
-              },
-            ],
-          },
-        ]
-      : []),
+    { key: '/', icon: <HomeOutlined />, label: '首页' },
+    { key: '/article', icon: <FileTextOutlined />, label: '文章' },
   ];
 
+  if (isAdmin) {
+    menuItems.push(
+      { key: '/tag/manage', icon: <TagOutlined />, label: '标签' },
+      { key: '/category/manage', icon: <AppstoreOutlined />, label: '分类' },
+    );
+  }
+
+  const userMenuItems = isAuthenticated
+    ? [
+        { key: 'profile', label: '个人中心', icon: <UserOutlined /> },
+        { key: 'create', label: '写文章', icon: <EditOutlined /> },
+        { key: 'favorites', label: '我的收藏', icon: <StarOutlined /> },
+        { type: 'divider' },
+        { key: 'logout', label: '退出登录', icon: <LogoutOutlined /> },
+      ]: [{ key: 'login', label: '登录', icon: <UserOutlined /> }]
+
+  const handleSearch = value => {
+    if (value.trim()) {
+      navigate(`/article?search=${encodeURIComponent(value)}`);
+      setSearchOpen(false);
+      setSearchValue('');
+    }
+  };
+
+  const handleMenuClick = ({ key }) => {
+    switch (key) {
+      case 'profile':
+        navigate('/profile');
+        break;
+      case 'create':
+        navigate('/article/create');
+        break;
+      case 'favorites':
+        navigate('/favorites');
+        break;
+      case 'logout':
+        logout();
+        navigate('/');
+        break;
+      case 'login':
+        navigate('/login');
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
-    <Layout className="layout-container">
-      <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
-          <Link to="/" style={{ color: 'white' }}>
-            博客系统
-          </Link>
-        </div>
+    <Layout className="app-layout">
+      <Header className="app-header">
+        <div className="header-content">
+          <div className="logo" onClick={() => navigate('/')}>
+            <span className="logo-text">LOGO</span>
+          </div>
 
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          items={menuItems}
-          style={{ flex: 1, marginLeft: 20 }}
-        />
-
-        <Space>
-          {isAuthenticated ? (
-            <>
-              <Link to="/article/create">
-                <Button type="primary" icon={<PlusOutlined />}>
-                  写文章
-                </Button>
+          <nav className="nav-menu">
+            {menuItems.map(item => (
+              <Link
+                key={item.key}
+                to={item.key}
+                className={`nav-item ${location.pathname === item.key ? 'active' : ''}`}>
+                {item.icon}
+                <span>{item.label}</span>
               </Link>
-              <Dropdown overlay={userMenu} placement="bottomRight">
-                <Space style={{ cursor: 'pointer' }}>
-                  <Avatar icon={<UserOutlined />} src={user?.avatar} />
-                  <span style={{ color: 'white' }}>{user?.username}</span>
-                </Space>
+            ))}
+          </nav>
+
+          <div className="header-actions">
+            <Tooltip title={isDark ? '切换到亮色模式' : '切换到暗色模式'}>
+              <Button
+                type="text"
+                icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+                onClick={toggleTheme}
+                className="theme-toggle-btn"
+                aria-label={isDark ? '切换到亮色模式' : '切换到暗色模式'}
+              />
+            </Tooltip>
+
+            <Button
+              type="text"
+              icon={<SearchOutlined />}
+              onClick={() => setSearchOpen(true)}
+              className="search-btn"
+            />
+
+            {isAuthenticated ? (
+              <Dropdown
+                menu={{ items: userMenuItems, onClick: handleMenuClick }}
+                placement="bottomRight">
+                <div className="user-avatar">
+                  <Avatar size={32} src={user?.avatar} style={{ backgroundColor: 'var(--accent)' }}>
+                    {user?.username?.[0]?.toUpperCase() || 'U'}
+                  </Avatar>
+                  <span className="username">{user?.username}</span>
+                </div>
               </Dropdown>
-            </>
-          ) : (
-            <>
-              <Link to="/login">
-                <Button type="text" style={{ color: 'white' }}>
-                  登录
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button type="primary">注册</Button>
-              </Link>
-            </>
-          )}
-        </Space>
+            ) : (
+              <Button type="primary" onClick={() => navigate('/login')} size="small">
+                登录
+              </Button>
+            )}
+          </div>
+        </div>
       </Header>
 
-      <Content className="content-wrapper">{children}</Content>
+      {searchOpen && (
+        <div className="search-overlay" onClick={() => setSearchOpen(false)}>
+          <div className="search-modal" onClick={e => e.stopPropagation()}>
+            <Input.Search
+              placeholder="搜索文章、标签..."
+              enterButton="搜索"
+              value={searchValue}
+              onChange={setSearchValue}
+              onSearch={handleSearch}
+              autoFocus
+              size="large"
+              className="search-input"
+              allowClear
+            />
+            <div className="search-hints">
+              <p>快捷键提示：按 ESC 关闭</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Content className="main-content">
+        <div className="content-wrapper animate-fade-in-up">
+          <Outlet />
+        </div>
+      </Content>
+
+      <Footer className="app-footer">
+        <div className="footer-content">
+          <div className="footer-links">
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+              <GithubOutlined />
+            </a>
+          </div>
+          <div className="footer-copyright">
+            © {new Date().getFullYear()} Blog. All rights reserved.
+          </div>
+        </div>
+      </Footer>
     </Layout>
   );
 };
