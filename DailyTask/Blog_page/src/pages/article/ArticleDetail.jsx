@@ -11,7 +11,7 @@ import {
   StarFilled,
   CalendarOutlined,
   EyeOutlined,
-  ArrowLeftOutlined
+  ArrowLeftOutlined,
 } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -72,19 +72,19 @@ const ArticleDetail = () => {
   }, [article?.content]);
 
   useEffect(() => {
-    if (!tocItems.length) return;
-    
+    if (!tocItems.length) return; 
+
     const handleScroll = () => {
       const headings = document.querySelectorAll('.article-content h2, .article-content h3');
       let currentId = '';
-      
-      headings.forEach((heading) => {
+
+      headings.forEach(heading => {
         const rect = heading.getBoundingClientRect();
         if (rect.top <= 100) {
           currentId = heading.id;
         }
       });
-      
+
       setActiveTocId(currentId);
     };
 
@@ -98,7 +98,7 @@ const ArticleDetail = () => {
     const headings = Array.from(tempDiv.querySelectorAll('h2, h3')).map((h, index) => ({
       id: `heading-${index}`,
       text: h.textContent.replace(/^#\s*/, ''),
-      level: h.tagName === 'H2' ? 2 : 3
+      level: h.tagName === 'H2' ? 2 : 3,
     }));
     setTocItems(headings);
   };
@@ -125,8 +125,8 @@ const ArticleDetail = () => {
     try {
       const data = await commentApi.getCommentsByArticle(id);
       setComments(data.data.comments);
-    } catch (error) {}
-    finally {
+    } catch (error) {
+    } finally {
       setCommentLoading(false);
     }
   };
@@ -138,7 +138,7 @@ const ArticleDetail = () => {
     } catch (error) {}
   };
 
-  const scrollToHeading = (id) => {
+  const scrollToHeading = id => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -146,21 +146,31 @@ const ArticleDetail = () => {
   };
 
   const handleLike = async () => {
-    if (!isAuthenticated) { message.warning('请先登录'); return; }
+    if (!isAuthenticated) {
+      message.warning('请先登录');
+      return;
+    }
     try {
       const data = await articleApi.likeArticle(id);
       setArticle(prev => ({ ...prev, likeCount: data.data.likeCount }));
       setIsLiked(data.data.isLiked);
-    } catch (error) { message.error(error.message); }
+    } catch (error) {
+      message.error(error.message);
+    }
   };
 
   const handleFavorite = async () => {
-    if (!isAuthenticated) { message.warning('请先登录'); return; }
+    if (!isAuthenticated) {
+      message.warning('请先登录');
+      return;
+    }
     try {
       const data = await articleApi.favoriteArticle(id);
       setArticle(prev => ({ ...prev, favoriteCount: data.data.favoriteCount }));
       setIsFavorited(data.data.isFavorited);
-    } catch (error) { message.error(error.message); }
+    } catch (error) {
+      message.error(error.message);
+    }
   };
 
   const handleDelete = async () => {
@@ -168,32 +178,49 @@ const ArticleDetail = () => {
       await articleApi.deleteArticle(id);
       message.success('删除成功');
       navigate('/');
-    } catch (error) { message.error(error.message); }
+    } catch (error) {
+      message.error(error.message);
+    }
   };
 
   const handleComment = async () => {
-    if (!isAuthenticated) { message.warning('请先登录'); return; }
-    if (!commentContent.trim()) { message.warning('请输入评论内容'); return; }
+    if (!isAuthenticated) {
+      message.warning('请先登录');
+      return;
+    }
+    if (!commentContent.trim()) {
+      message.warning('请输入评论内容');
+      return;
+    }
     setSubmitting(true);
     try {
       await commentApi.createComment({ content: commentContent, article: id });
       setCommentContent('');
       message.success('评论成功');
       fetchComments();
-    } catch (error) { message.error(error.message); }
-    finally { setSubmitting(false); }
+    } catch (error) {
+      message.error(error.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleDeleteComment = async (commentId) => {
+  const handleDeleteComment = async commentId => {
     try {
       await commentApi.deleteComment(commentId);
       message.success('删除成功');
       fetchComments();
-    } catch (error) { message.error(error.message); }
+    } catch (error) {
+      message.error(error.message);
+    }
   };
 
   if (loading) {
-    return <div className="detail-loading"><Spin size="large" /></div>;
+    return (
+      <div className="detail-loading">
+        <Spin size="large" />
+      </div>
+    );
   }
 
   if (!article) return null;
@@ -207,22 +234,28 @@ const ArticleDetail = () => {
           type="text"
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/article')}
-          className="back-btn"
-        >
+          className="back-btn">
           返回列表
         </Button>
-        
+
         <div className="header-info">
           <h1 className="article-title">{article.title}</h1>
           <div className="meta-row">
             <span className="meta-item">
-              <Avatar size={24} src={article.author?.avatar} style={{ backgroundColor: 'var(--accent)' }}>
+              <Avatar
+                size={24}
+                src={article.author?.avatar}
+                style={{ backgroundColor: 'var(--accent)' }}>
                 {article.author?.username?.[0]}
               </Avatar>
               {article.author?.username}
             </span>
-            <span className="meta-item"><CalendarOutlined /> {dayjs(article.createdAt).format('YYYY-MM-DD')}</span>
-            <span className="meta-item"><EyeOutlined /> {article.views || 0}</span>
+            <span className="meta-item">
+              <CalendarOutlined /> {dayjs(article.createdAt).format('YYYY-MM-DD')}
+            </span>
+            <span className="meta-item">
+              <EyeOutlined /> {article.views || 0}
+            </span>
           </div>
           <div className="tag-row">
             {article.tags?.map(tag => (
@@ -234,20 +267,21 @@ const ArticleDetail = () => {
             <Button
               type={isLiked ? 'primary' : 'default'}
               icon={isLiked ? <LikeFilled /> : <LikeOutlined />}
-              onClick={handleLike}
-            >
+              onClick={handleLike}>
               {article.likeCount || 0}
             </Button>
             <Button
               type={isFavorited ? 'primary' : 'default'}
               icon={isFavorited ? <StarFilled /> : <StarOutlined />}
-              onClick={handleFavorite}
-            >
+              onClick={handleFavorite}>
               {article.favoriteCount || 0}
             </Button>
             {isAuthor && (
               <>
-                <Button icon={<EditOutlined />} onClick={() => navigate(`/article/edit/${article._id}`)} />
+                <Button
+                  icon={<EditOutlined />}
+                  onClick={() => navigate(`/article/edit/${article._id}`)}
+                />
                 <Popconfirm title="确定删除?" onConfirm={handleDelete}>
                   <Button icon={<DeleteOutlined />} danger />
                 </Popconfirm>
@@ -273,8 +307,7 @@ const ArticleDetail = () => {
                         style={oneDark}
                         customStyle={{ margin: '20px 0', borderRadius: '8px', fontSize: '14px' }}
                         showLineNumbers
-                        {...props}
-                      >
+                        {...props}>
                         {String(children).replace(/\n$/, '')}
                       </SyntaxHighlighter>
                     );
@@ -287,10 +320,9 @@ const ArticleDetail = () => {
                         borderRadius: '4px',
                         fontFamily: "'JetBrains Mono', monospace",
                         fontSize: '0.9em',
-                        color: '#e06c75'
+                        color: '#e06c75',
                       }}
-                      {...props}
-                    >
+                      {...props}>
                       {children}
                     </code>
                   );
@@ -303,9 +335,8 @@ const ArticleDetail = () => {
                 },
                 td({ children }) {
                   return <td>{children}</td>;
-                }
-              }}
-            >
+                },
+              }}>
               {article.content}
             </ReactMarkdown>
           </div>
@@ -321,11 +352,10 @@ const ArticleDetail = () => {
                   href={`#heading-${index}`}
                   className={`toc-item ${activeTocId === `heading-${index}` ? 'active' : ''}`}
                   style={{ paddingLeft: `${(item.level - 2) * 12 + 16}px` }}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.preventDefault();
                     scrollToHeading(`heading-${index}`);
-                  }}
-                >
+                  }}>
                   {item.text}
                 </a>
               ))}
@@ -337,19 +367,16 @@ const ArticleDetail = () => {
           <div className="sidebar-section">
             <h3 className="sidebar-title">相关文章</h3>
             <div className="related-list">
-              {relatedArticles.map((item) => (
+              {relatedArticles.map(item => (
                 <div
                   key={item._id}
                   className="related-item"
-                  onClick={() => navigate(`/article/${item._id}`)}
-                >
+                  onClick={() => navigate(`/article/${item._id}`)}>
                   <h4>{item.title}</h4>
                   <p>阅读 {item.views || 0}</p>
                 </div>
               ))}
-              {relatedArticles.length === 0 && (
-                <p className="empty-text">暂无相关文章</p>
-              )}
+              {relatedArticles.length === 0 && <p className="empty-text">暂无相关文章</p>}
             </div>
           </div>
         </aside>
@@ -363,7 +390,7 @@ const ArticleDetail = () => {
               rows={3}
               placeholder="发表你的评论..."
               value={commentContent}
-              onChange={(e) => setCommentContent(e.target.value)}
+              onChange={e => setCommentContent(e.target.value)}
             />
             <Button type="primary" onClick={handleComment} loading={submitting}>
               发表评论
@@ -373,16 +400,20 @@ const ArticleDetail = () => {
         <List
           dataSource={comments}
           loading={commentLoading}
-          renderItem={(item) => (
+          renderItem={item => (
             <List.Item
               actions={[
                 (user?._id === item.author?._id || user?.role === 'admin') && (
-                  <Popconfirm key="delete" title="确定删除?" onConfirm={() => handleDeleteComment(item._id)}>
-                    <Button type="link" danger size="small">删除</Button>
+                  <Popconfirm
+                    key="delete"
+                    title="确定删除?"
+                    onConfirm={() => handleDeleteComment(item._id)}>
+                    <Button type="link" danger size="small">
+                      删除
+                    </Button>
                   </Popconfirm>
-                )
-              ].filter(Boolean)}
-            >
+                ),
+              ].filter(Boolean)}>
               <List.Item.Meta
                 avatar={<Avatar icon={<UserOutlined />} src={item.author?.avatar} />}
                 title={item.author?.username}

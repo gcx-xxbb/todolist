@@ -7,6 +7,13 @@ const articleSchema = new mongoose.Schema({
     trim: true,
     maxlength: [200, '标题最多200个字符']
   },
+  slug: {
+    type: String,
+    unique: true,
+    required: [true, 'Slug不能为空'],
+    trim: true,
+    maxlength: [200, 'Slug最多200个字符']
+  },
   content: {
     type: String,
     required: [true, '内容不能为空']
@@ -58,9 +65,16 @@ const articleSchema = new mongoose.Schema({
   timestamps: true
 });
 
+articleSchema.pre('save', function (next) {
+  this.slug = this.title.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
+  next();
+});
+
 articleSchema.index({ title: 'text', content: 'text' });
 articleSchema.index({ author: 1, createdAt: -1 });
 articleSchema.index({ status: 1, createdAt: -1 });
+articleSchema.index({ slug: 1 }, { unique: true })
+
 
 articleSchema.virtual('comments', {
   ref: 'Comment',

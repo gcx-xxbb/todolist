@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Input, Tag, Button, Empty, Spin, Pagination } from 'antd';
-import { SearchOutlined, EyeOutlined, HeartOutlined, CalendarOutlined, FileTextOutlined } from '@ant-design/icons';
+import {
+  SearchOutlined,
+  EyeOutlined,
+  HeartOutlined,
+  CalendarOutlined,
+  FileTextOutlined,
+} from '@ant-design/icons';
 import { articleApi, categoryApi, tagApi } from '../../services';
 import dayjs from 'dayjs';
 import './ArticleList.css';
@@ -18,19 +24,13 @@ const ArticleList = () => {
   const fetchCountRef = useRef(0);
 
   useEffect(() => {
-    console.log(1234);
-    
     fetchCountRef.current = 0;
-    
+
     const fetchData = async () => {
       if (fetchCountRef.current > 0) return;
       fetchCountRef.current++;
-      
-      await Promise.all([
-        fetchArticles(),
-        fetchCategories(),
-        fetchTags()
-      ]);
+
+      await Promise.all([fetchArticles(), fetchCategories(), fetchTags()]);
     };
 
     fetchData();
@@ -42,9 +42,9 @@ const ArticleList = () => {
       const params = {
         page: pagination.current,
         limit: pagination.pageSize,
-        status: 'published'
+        status: 'published',
       };
-      
+
       if (searchValue) params.search = searchValue;
       if (searchParams.get('category')) params.category = searchParams.get('category');
       if (searchParams.get('tag')) params.tag = searchParams.get('tag');
@@ -53,7 +53,7 @@ const ArticleList = () => {
       setArticles(data.data.articles || []);
       setPagination(prev => ({
         ...prev,
-        total: data.data.pagination?.total || 0
+        total: data.data.pagination?.total || 0,
       }));
     } catch (error) {
       console.error(error);
@@ -76,7 +76,7 @@ const ArticleList = () => {
     } catch (error) {}
   };
 
-  const handleSearch = (value) => {
+  const handleSearch = value => {
     setSearchValue(value);
     if (value.trim()) {
       setSearchParams({ search: value });
@@ -85,7 +85,7 @@ const ArticleList = () => {
     }
   };
 
-  const handleCategoryFilter = (categoryId) => {
+  const handleCategoryFilter = categoryId => {
     if (categoryId) {
       setSearchParams({ category: categoryId });
     } else {
@@ -103,7 +103,7 @@ const ArticleList = () => {
       <div className="list-header">
         <h1 className="page-title">文章</h1>
         <p className="page-subtitle">已按发布时间排序，分享思考与探索。</p>
-        
+
         <div className="filter-bar">
           <Input.Search
             placeholder="搜索文章..."
@@ -113,20 +113,18 @@ const ArticleList = () => {
             allowClear
             className="search-input"
           />
-          
+
           <div className="category-filters">
-            <Tag 
+            <Tag
               onClick={() => handleCategoryFilter(null)}
-              className={`category-tag ${!searchParams.get('category') ? 'active' : ''}`}
-            >
+              className={`category-tag ${!searchParams.get('category') ? 'active' : ''}`}>
               全部
             </Tag>
             {categories.slice(0, 8).map(cat => (
-              <Tag 
-                key={cat._id} 
+              <Tag
+                key={cat._id}
                 onClick={() => handleCategoryFilter(cat._id)}
-                className={`category-tag ${searchParams.get('category') === cat._id ? 'active' : ''}`}
-              >
+                className={`category-tag ${searchParams.get('category') === cat._id ? 'active' : ''}`}>
                 {cat.name}
               </Tag>
             ))}
@@ -134,7 +132,9 @@ const ArticleList = () => {
 
           <div className="tag-filters">
             {tags.slice(0, 12).map(tag => (
-              <span key={tag._id} className="tag-item">{tag.name}</span>
+              <span key={tag._id} className="tag-item">
+                {tag.name}
+              </span>
             ))}
           </div>
         </div>
@@ -142,18 +142,19 @@ const ArticleList = () => {
 
       <div className="article-list-container">
         {loading ? (
-          <div className="loading-wrapper"><Spin size="large" /></div>
+          <div className="loading-wrapper">
+            <Spin size="large" />
+          </div>
         ) : articles.length === 0 ? (
           <Empty description="暂无文章" />
         ) : (
           <div className="article-list">
             {articles.map((article, index) => (
-              <div 
-                key={article._id} 
+              <div
+                key={article._id}
                 className="article-list-item"
                 style={{ animationDelay: `${index * 0.03}s` }}
-                onClick={() => navigate(`/article/${article._id}`)}
-              >
+                onClick={() => navigate(`/article/${article._id}`)}>
                 <div className="item-icon">
                   <FileTextOutlined />
                 </div>
@@ -165,7 +166,9 @@ const ArticleList = () => {
                 </div>
                 <div className="item-meta">
                   {article.tags?.slice(0, 2).map(tag => (
-                    <Tag key={tag._id} color="blue" size="small">{tag.name}</Tag>
+                    <Tag key={tag._id} color="blue" size="small">
+                      {tag.name}
+                    </Tag>
                   ))}
                   <span className="meta-date">
                     <CalendarOutlined /> {dayjs(article.createdAt).format('YYYY-MM-DD')}
